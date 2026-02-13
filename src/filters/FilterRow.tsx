@@ -1,45 +1,47 @@
-import { Box, IconButton, MenuItem, Select, Stack } from "@mui/material";
-import { Trash2 } from "lucide-react";
-import type { FilterCondition } from "../types/filter.types";
-import { employeeFields } from "../data/employeeFields";
-import { getFieldConfig } from "../utils/getFieldConfig";
-import { DynamicInput } from "./inputs/DynamicInput";
+import {
+  Box,
+  IconButton,
+  MenuItem,
+  Select,
+} from '@mui/material'
+import { Trash2 } from 'lucide-react'
+import { employeeFields } from '../data/employeeFields'
+import type { FilterCondition } from '../types/filter.types'
+import { DynamicInput } from './inputs/DynamicInput'
 
 interface Props {
-  filter: FilterCondition;
-  onUpdate: (filter: FilterCondition) => void;
-  onRemove: (id: string) => void;
+  filter: FilterCondition
+  onUpdate: (filter: FilterCondition) => void
+  onRemove: (id: string) => void
 }
 
 export const FilterRow = ({ filter, onUpdate, onRemove }: Props) => {
-  const fieldConfig = getFieldConfig(filter.field);
-
-  const handleFieldChange = (field: string) => {
-    const config = getFieldConfig(field);
-
-    onUpdate({
-      ...filter,
-      field,
-      operator: config?.operators[0] || "equals",
-      value: "",
-    });
-  };
-
-  const handleOperatorChange = (operator: any) => {
-    onUpdate({ ...filter, operator });
-  };
-
-  const handleValueChange = (value: any) => {
-    onUpdate({ ...filter, value });
-  };
+  const fieldConfig = employeeFields.find(
+    (f) => f.key === filter.field
+  )
 
   return (
-    <Stack direction="row" spacing={2} alignItems="center">
-      {/* Field Selector */}
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 2,
+        p: 2,
+        borderRadius: 2,
+        backgroundColor: '#fff',
+        border: '1px solid #e5e7eb',
+        transition: '0.2s',
+        '&:hover': {
+          boxShadow: '0 3px 8px rgba(0,0,0,0.05)',
+        },
+      }}
+    >
       <Select
         value={filter.field}
-        onChange={(e) => handleFieldChange(e.target.value)}
         displayEmpty
+        onChange={(e) =>
+          onUpdate({ ...filter, field: e.target.value })
+        }
         sx={{ minWidth: 150 }}
       >
         <MenuItem value="">Select Field</MenuItem>
@@ -50,32 +52,34 @@ export const FilterRow = ({ filter, onUpdate, onRemove }: Props) => {
         ))}
       </Select>
 
-      {/* Operator Selector */}
-      <Select
-        value={filter.operator}
-        onChange={(e) => handleOperatorChange(e.target.value)}
-        disabled={!fieldConfig}
-        sx={{ minWidth: 150 }}
-      >
-        {fieldConfig?.operators.map((op) => (
-          <MenuItem key={op} value={op}>
-            {op}
-          </MenuItem>
-        ))}
-      </Select>
+      {fieldConfig && (
+        <Select
+          value={filter.operator}
+          onChange={(e) =>
+            onUpdate({ ...filter, operator: e.target.value })
+          }
+          sx={{ minWidth: 150 }}
+        >
+          {fieldConfig.operators.map((op) => (
+            <MenuItem key={op} value={op}>
+              {op}
+            </MenuItem>
+          ))}
+        </Select>
+      )}
 
-      {/* Dynamic Input */}
       <DynamicInput
         fieldConfig={fieldConfig}
         operator={filter.operator}
         value={filter.value}
-        onChange={handleValueChange}
+        onChange={(value) =>
+          onUpdate({ ...filter, value })
+        }
       />
 
-      {/* Remove Button */}
       <IconButton onClick={() => onRemove(filter.id)}>
         <Trash2 size={18} />
       </IconButton>
-    </Stack>
-  );
-};
+    </Box>
+  )
+}

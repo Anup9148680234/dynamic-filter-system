@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react'
-import { Container, Typography, Box } from '@mui/material'
+import {
+  Container,
+  Typography,
+  Box,
+  Chip,
+  Stack,
+  Divider,
+} from '@mui/material'
 import { generateEmployees } from './data/generateEmployees'
 import type { Employee } from './types/employee.types'
 import type { FilterCondition } from './types/filter.types'
@@ -12,27 +19,39 @@ function App() {
   const [filters, setFilters] = useState<FilterCondition[]>([])
 
   useEffect(() => {
-    const data = generateEmployees()
-    setEmployees(data)
+    setEmployees(generateEmployees())
   }, [])
 
-  const filteredEmployees = useEmployeeFilters(employees, filters)
+  const filtered = useEmployeeFilters(employees, filters)
 
   return (
-    <Container sx={{ py: 4 }}>
-      <Typography variant="h4" sx={{ mb: 3 }}>
+    <Container maxWidth="lg" sx={{ py: 5 }}>
+      <Typography variant="h4" fontWeight={600} gutterBottom>
         Dynamic Filter System
       </Typography>
 
-      <FilterPanel onChange={setFilters} />
+      <FilterPanel onChange={setFilters} filters={filters} />
 
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="body2">
-          Showing {filteredEmployees.length} of {employees.length} employees
-        </Typography>
-      </Box>
+      {filters.length > 0 && (
+        <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ my: 2, ml: 1 }}>
+          {filters.map((f) => (
+            <Chip
+              key={f.id}
+              label={`${f.field} ${f.operator} ${JSON.stringify(f.value)}`}
+              size="small"
+            />
+          ))}
+        </Stack>
+      )}
 
-      <EmployeeTable data={filteredEmployees} />
+
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 3, mt: 3, ml: 2 }}>
+        Showing {filtered.length} of {employees.length} employees
+      </Typography>
+      
+      <Divider sx={{ my: 3 }} />
+
+      <EmployeeTable data={filtered} />
     </Container>
   )
 }

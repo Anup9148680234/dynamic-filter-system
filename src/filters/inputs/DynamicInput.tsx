@@ -6,11 +6,11 @@ import {
   Checkbox,
   FormControlLabel,
 } from '@mui/material'
-import type { FieldConfig, Operator } from '../../types/filter.types'
+import type { FieldConfig } from '../../types/filter.types'
 
 interface Props {
   fieldConfig?: FieldConfig
-  operator?: Operator
+  operator?: string
   value: any
   onChange: (value: any) => void
 }
@@ -23,73 +23,26 @@ export const DynamicInput = ({
 }: Props) => {
   if (!fieldConfig) return null
 
-  // TEXT
-  if (fieldConfig.type === 'text') {
-    return (
-      <TextField
-        size="small"
-        value={value || ''}
-        onChange={(e) => onChange(e.target.value)}
-      />
-    )
-  }
-
-  // NUMBER & CURRENCY
-  if (fieldConfig.type === 'number' || fieldConfig.type === 'currency') {
+  if (fieldConfig.type === 'currency') {
     if (operator === 'between') {
       return (
         <Stack direction="row" spacing={1}>
           <TextField
             size="small"
-            type="number"
             placeholder="Min"
+            type="number"
             value={value?.min || ''}
             onChange={(e) =>
-              onChange({ ...value, min: Number(e.target.value) })
+              onChange({ ...value, min: e.target.value })
             }
           />
           <TextField
             size="small"
-            type="number"
             placeholder="Max"
+            type="number"
             value={value?.max || ''}
             onChange={(e) =>
-              onChange({ ...value, max: Number(e.target.value) })
-            }
-          />
-        </Stack>
-      )
-    }
-
-    return (
-      <TextField
-        size="small"
-        type="number"
-        value={value || ''}
-        onChange={(e) => onChange(Number(e.target.value))}
-      />
-    )
-  }
-
-  // DATE
-  if (fieldConfig.type === 'date') {
-    if (operator === 'between') {
-      return (
-        <Stack direction="row" spacing={1}>
-          <TextField
-            size="small"
-            type="date"
-            value={value?.start || ''}
-            onChange={(e) =>
-              onChange({ ...value, start: e.target.value })
-            }
-          />
-          <TextField
-            size="small"
-            type="date"
-            value={value?.end || ''}
-            onChange={(e) =>
-              onChange({ ...value, end: e.target.value })
+              onChange({ ...value, max: e.target.value })
             }
           />
         </Stack>
@@ -97,7 +50,6 @@ export const DynamicInput = ({
     }
   }
 
-  // SELECT
   if (fieldConfig.type === 'select') {
     return (
       <Select
@@ -114,28 +66,6 @@ export const DynamicInput = ({
     )
   }
 
-  // MULTI-SELECT
-  if (fieldConfig.type === 'multi-select') {
-    return (
-      <Select
-        multiple
-        size="small"
-        value={value || []}
-        onChange={(e) => onChange(e.target.value)}
-        renderValue={(selected) => selected.join(', ')}
-        sx={{ minWidth: 200 }}
-      >
-        {fieldConfig.options?.map((opt) => (
-          <MenuItem key={opt} value={opt}>
-            <Checkbox checked={(value || []).includes(opt)} />
-            {opt}
-          </MenuItem>
-        ))}
-      </Select>
-    )
-  }
-
-  // BOOLEAN
   if (fieldConfig.type === 'boolean') {
     return (
       <FormControlLabel
@@ -150,5 +80,11 @@ export const DynamicInput = ({
     )
   }
 
-  return null
+  return (
+    <TextField
+      size="small"
+      value={value || ''}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  )
 }

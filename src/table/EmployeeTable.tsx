@@ -16,24 +16,24 @@ interface Props {
 export const EmployeeTable = ({ data }: Props) => {
   if (!data.length) {
     return (
-      <Paper sx={{ p: 4, textAlign: 'center' }}>
-        <Typography variant="h6">No results found</Typography>
+      <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 3 }}>
+        <Typography variant="h6">
+          No employees match your filters
+        </Typography>
       </Paper>
     )
   }
 
   return (
-    <Paper>
+    <Paper sx={{ borderRadius: 3 }}>
       <Table>
         <TableHead>
           <TableRow>
             <TableCell>Name</TableCell>
             <TableCell>Department</TableCell>
-            <TableCell>Role</TableCell>
             <TableCell>Salary</TableCell>
             <TableCell>City</TableCell>
             <TableCell>Active</TableCell>
-            <TableCell>Rating</TableCell>
           </TableRow>
         </TableHead>
 
@@ -42,11 +42,13 @@ export const EmployeeTable = ({ data }: Props) => {
             <TableRow key={emp.id}>
               <TableCell>{emp.name}</TableCell>
               <TableCell>{emp.department}</TableCell>
-              <TableCell>{emp.role}</TableCell>
-              <TableCell>${emp.salary.toLocaleString()}</TableCell>
+              <TableCell>
+                ${emp.salary.toLocaleString()}
+              </TableCell>
               <TableCell>{emp.address.city}</TableCell>
-              <TableCell>{emp.isActive ? 'Yes' : 'No'}</TableCell>
-              <TableCell>{emp.performanceRating}</TableCell>
+              <TableCell>
+                {emp.isActive ? 'Yes' : 'No'}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
