@@ -1,92 +1,97 @@
-import { useMemo } from "react";
-import type { Employee } from "../types/employee.types";
-import type { FilterCondition } from "../types/filter.types";
-import dayjs from "dayjs";
+import { useMemo } from 'react'
+import type { Employee } from '../types/employee.types'
+import type { FilterCondition } from '../types/filter.types'
+import dayjs from 'dayjs'
 
 const getNestedValue = (obj: any, path: string) => {
-  return path.split(".").reduce((acc, key) => acc?.[key], obj);
-};
+  return path.split('.').reduce((acc, key) => acc?.[key], obj)
+}
+
+const isNumberRange = (
+  value: unknown
+): value is { min: number; max: number } => {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'min' in value &&
+    'max' in value
+  )
+}
+
+const isDateRange = (
+  value: unknown
+): value is { start: string; end: string } => {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'start' in value &&
+    'end' in value
+  )
+}
+
+const isStringArray = (value: unknown): value is string[] => {
+  return Array.isArray(value)
+}
 
 export const useEmployeeFilters = (
   data: Employee[],
-  filters: FilterCondition[],
+  filters: FilterCondition[]
 ) => {
   return useMemo(() => {
-    if (!filters) return data;
-
-    if (!filters.length) return data;
+    if (!filters.length) return data
 
     return data.filter((item) =>
       filters.every((filter) => {
-        const value = getNestedValue(item, filter.field);
+        const rawValue = getNestedValue(item, filter.field)
 
         switch (filter.operator) {
-          case "equals":
+          case 'equals':
             return (
-              String(value).toLowerCase() === String(filter.value).toLowerCase()
-            );
+              String(rawValue).toLowerCase() ===
+              String(filter.value ?? '').toLowerCase()
+            )
 
-          case "contains":
-            return String(value)
+          case 'contains':
+            return String(rawValue)
               .toLowerCase()
-              .includes(String(filter.value).toLowerCase());
+              .includes(String(filter.value ?? '').toLowerCase())
 
-          case "notContains":
-            return !String(value)
-              .toLowerCase()
-              .includes(String(filter.value).toLowerCase());
+          case 'gt':
+            return Number(rawValue) > Number(filter.value)
 
-          case "startsWith":
-            return String(value)
-              .toLowerCase()
-              .startsWith(String(filter.value).toLowerCase());
+          case 'lt':
+            return Number(rawValue) < Number(filter.value)
 
-          case "endsWith":
-            return String(value)
-              .toLowerCase()
-              .endsWith(String(filter.value).toLowerCase());
-
-          case "gt":
-            return Number(value) > Number(filter.value);
-
-          case "lt":
-            return Number(value) < Number(filter.value);
-
-          case "gte":
-            return Number(value) >= Number(filter.value);
-
-          case "lte":
-            return Number(value) <= Number(filter.value);
-
-          case "between":
-            if (typeof filter.value === "object") {
-              if ("min" in filter.value)
-                return (
-                  Number(value) >= Number(filter.value.min) &&
-                  Number(value) <= Number(filter.value.max)
-                );
-
-              if ("start" in filter.value)
-                return (
-                  dayjs(value).isAfter(dayjs(filter.value.start)) &&
-                  dayjs(value).isBefore(dayjs(filter.value.end))
-                );
+          case 'between':
+            if (isNumberRange(filter.value)) {
+              return (
+                Number(rawValue) >= filter.value.min &&
+                Number(rawValue) <= filter.value.max
+              )
             }
-            return true;
 
-          case "is":
-            return value === filter.value;
+            if (isDateRange(filter.value)) {
+              return (
+                dayjs(rawValue).isAfter(dayjs(filter.value.start)) &&
+                dayjs(rawValue).isBefore(dayjs(filter.value.end))
+              )
+            }
 
-          case "in":
-            return value.some((v: any) => filter.value.includes(v));
+            return true
 
-          case "notIn":
-            return !value.some((v: any) => filter.value.includes(v));
+          case 'is':
+            return rawValue === filter.value
+
+          case 'in':
+            if (isStringArray(filter.value)) {
+              return filter.value.includes(rawValue)
+            }
+            return true
 
           default:
-            return true;
+            return true
         }
-      }),
-    );
-  }, [data, filters]);
-};
+      })
+    )
+  }, [data, filters])
+}
